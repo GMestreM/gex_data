@@ -330,3 +330,39 @@ def get_zero_gamma_data() -> dict:
             dict_zero_gamma[doc_keys[-1]] = document[doc_keys[-1]]
     
     return dict_zero_gamma
+
+
+if __name__ == '__main__':
+    print('Fetch new option data from source')
+    # Fetch new option data and store in S3
+    response = store_raw_option_chains()
+    
+    print('Option data stored in S3')
+    
+    # Add new record to SQL with execution details
+    id_sql = store_execution_details_sql(response_compressed=response)
+    
+    print('SQL record with execution details has been created')
+    
+    # Get quotes info from database
+    quote_info = get_quote_info_from_mongo(mongodb_upload_id=str(response['_id']))
+    spot_price = quote_info.iloc[:,0]['close']
+    last_trade_date = pd.to_datetime(quote_info.iloc[:,0]['lastTradeTimestamp'])
+    
+    print(f'Last trade date obtained: {last_trade_date}')
+    
+    # Calculate gamma exposure and store in database
+    upload_id_profile, upload_id_zero = store_gamma_profile(
+        secure_url=response['secure_url'], 
+        spot_price=spot_price, 
+        last_trade_date=last_trade_date, 
+        mongodb_upload_id=str(response['_id']))
+    
+    print('Gamma profile has been stored in db')
+    
+    upload_id_total_gamma = store_total_gamma(
+        secure_url=response['secure_url'], 
+        spot_price=spot_price, 
+        mongodb_upload_id=str(response['_id']))
+    
+    print('Total gamma has been stored')
