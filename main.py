@@ -34,9 +34,13 @@ app = FastAPI(
 
 # API endpoints
 # ==========================
-@app.get("/")
+@app.get(
+    "/",
+    response_description="Welcome message",
+    status_code=status.HTTP_200_OK,
+    )
 async def hello_world():
-   return {"message": "hello_world"}
+   return {"message": "hello World"}
 
 @app.get(
     "/execution_info",

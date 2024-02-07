@@ -176,6 +176,8 @@ def store_gamma_profile(secure_url:str, spot_price:float, last_trade_date:pd.Tim
     mongo_doc_zero_gamma = {
         mongodb_upload_id:df_zero_gamma.reset_index().to_dict('list')
     }
+    # Fix date format
+    mongo_doc_zero_gamma[mongodb_upload_id]['index'] = [last_trade_date]
     
     with MongoClient(mongo_url) as mongodb_client:
         mongo_database = mongodb_client[MONGO_DB_NAME]
