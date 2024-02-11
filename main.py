@@ -1,4 +1,4 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 
@@ -19,6 +19,7 @@ from database import (
     store_execution_details_sql,
     store_gamma_profile,
     store_total_gamma,
+    update_database,
 )
 
 # Get env variables
@@ -108,35 +109,13 @@ async def ohlc_data():
 @app.post(
     "/update_db",
     response_description="Fetch new raw data, transform and update values in database",
-    status_code=status.HTTP_201_CREATED,
+    status_code=status.HTTP_202_ACCEPTED,
     # response_model=StudentModel,
     # response_model_by_alias=False,
 )
-async def update_db():
-    # Fetch new option data and store in S3
-    response = store_raw_option_chains()
-    
-    # Add new record to SQL with execution details
-    id_sql = store_execution_details_sql(response_compressed=response)
-    
-    # Get quotes info from database
-    quote_info = get_quote_info_from_mongo(mongodb_upload_id=str(response['_id']))
-    spot_price = quote_info.iloc[:,0]['close']
-    last_trade_date = pd.to_datetime(quote_info.iloc[:,0]['lastTradeTimestamp'])
-    
-    # Calculate gamma exposure and store in database
-    upload_id_profile, upload_id_zero = store_gamma_profile(
-        secure_url=response['secure_url'], 
-        spot_price=spot_price, 
-        last_trade_date=last_trade_date, 
-        mongodb_upload_id=str(response['_id']))
-    
-    upload_id_total_gamma = store_total_gamma(
-        secure_url=response['secure_url'], 
-        spot_price=spot_price, 
-        mongodb_upload_id=str(response['_id']))
-    
-    return Response(status_code=status.HTTP_201_CREATED)
+async def update_db(background_tasks: BackgroundTasks):
+    background_tasks.add_task(update_database)
+    return Response(status_code=status.HTTP_202_CREATED)
     
 @app.post(
     "/initialize",

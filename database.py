@@ -333,8 +333,7 @@ def get_zero_gamma_data() -> dict:
     
     return dict_zero_gamma
 
-
-if __name__ == '__main__':
+def update_database():
     print('Fetch new option data from source')
     # Fetch new option data and store in S3
     response = store_raw_option_chains()
@@ -368,3 +367,7 @@ if __name__ == '__main__':
         mongodb_upload_id=str(response['_id']))
     
     print('Total gamma has been stored')
+    
+
+if __name__ == '__main__':
+    update_database()
