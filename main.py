@@ -113,7 +113,7 @@ async def ohlc_data():
     # response_model=StudentModel,
     # response_model_by_alias=False,
 )
-async def update_db(background_tasks: BackgroundTasks):
+def update_db(background_tasks: BackgroundTasks):
     background_tasks.add_task(update_database)
     return Response(status_code=status.HTTP_202_ACCEPTED)
     
