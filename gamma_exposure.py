@@ -197,7 +197,8 @@ def calculate_gamma_profile(option_chain_long: pd.DataFrame, spot_price: float, 
 
     # For each spot level, calc gamma exposure at that point
     option_chain_copy = option_chain_long.copy()
-    for level in levels:
+    print(f"   * GAMMA PROFILE CALC: starting loop (0/{len(levels)})")
+    for i, level in enumerate(levels):
         option_chain_copy['gammaExposure'] = option_chain_copy.apply(lambda row : calc_gamma_exposure(level, row['strike'], row['impliedVolatility'], 
                                                             row['Days untill Expiry'], 0, 0, row['optionType'], row['openInterest']), axis = 1)
         
@@ -216,6 +217,8 @@ def calculate_gamma_profile(option_chain_long: pd.DataFrame, spot_price: float, 
         exp_fri_call = exp_fri.loc[exp_fri['optionType'] == 'call',:]
         exp_fri_put = exp_fri.loc[exp_fri['optionType'] == 'put',:]
         total_gamma_ex_fri.append(exp_fri_call['gammaExposure'].sum() - exp_fri_put['gammaExposure'].sum())
+        
+        print(f"   * GAMMA PROFILE CALC: finished loop ({i}/{len(levels)})")
         
         
     total_gamma = np.array(total_gamma) / 10**9

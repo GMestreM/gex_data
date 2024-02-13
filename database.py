@@ -159,12 +159,16 @@ def store_gamma_profile(secure_url:str, spot_price:float, last_trade_date:pd.Tim
     option_chain_long = get_df_from_storage(secure_url=secure_url)
     option_chain_long['expiration'] = pd.to_datetime(option_chain_long['expiration'])
     
+    print(f" - GAMMA PROFILE: option chain retrieved (shape {option_chain_long.shape})")
+    
     gex_profile, zero_gamma = calculate_gamma_profile(
         option_chain_long=option_chain_long, 
         spot_price=spot_price, 
         last_trade_date=last_trade_date,
         pct_from=0.8, 
         pct_to=1.2)
+    
+    print(f" - GAMMA PROFILE: gex_profile obtained (shape {gex_profile.shape})")
     
     df_zero_gamma = pd.DataFrame({'Zero Gamma':[zero_gamma]}, index=[last_trade_date])
     
